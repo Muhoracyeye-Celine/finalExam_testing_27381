@@ -1,0 +1,11 @@
+target/
+.idea/
+.vscode/
+*.iml
+
+# Local database configuration may contain a password.
+src/main/resources/hibernate.cfg.xml
+
+# Operating-system files
+.DS_Store
+Thumbs.db
