@@ -48,7 +48,7 @@ Additional packages will be added as the project grows:
 - `service` for business rules
 - `util` for Hibernate configuration
 
-## Run the tests
+## Running the tests
 
 ```bash
 mvn clean test
