@@ -25,40 +25,54 @@ return dates, shelves, rooms, and late-return fees. It is a backend project and 
 ## Current progress
 
 - Maven project structure created.
-- Core package name created: `com.auca.library`.
+- Java 21, Maven, Hibernate ORM, PostgreSQL and JUnit configured.
+- PostgreSQL database `auca_library_db` created.
+- Hibernate database configuration added.
+- `HibernateUtil` created to manage the Hibernate SessionFactory.
+- Database connection check completed successfully.
 - Location hierarchy types created.
-- Initial JUnit tests added for the location hierarchy rules.
+- Initial JUnit tests added for location hierarchy rules.
 
 ## Package structure
 
 ```text
+database/
+└── create_database.sql
+
 src/main/java/com/auca/library/
 ├── LibraryApplication.java
-└── domain/
-    └── LocationType.java
+├── domain/
+│   └── LocationType.java
+└── util/
+    └── HibernateUtil.java
 
-src/test/java/com/auca/library/domain/
-└── LocationTypeTest.java
+src/main/resources/
+├── hibernate.cfg.xml
+└── hibernate.cfg.xml.example
+
+src/test/java/com/auca/library/
+├── domain/
+│   └── LocationTypeTest.java
+└── util/
+    └── DatabaseConnectionCheck.java
 ```
 
-Additional packages will be added as the project grows:
+The local `hibernate.cfg.xml` contains private credentials and is
+excluded from GitHub through `.gitignore`. The
+`hibernate.cfg.xml.example` file provides a safe configuration template.
 
-- `domain` for entities and enums
-- `dao` for database operations
-- `service` for business rules
-- `util` for Hibernate configuration
 
 ## Running the tests
+
+Run the normal unit tests:
 
 ```bash
 mvn clean test
 ```
 
-## Database
+Run the PostgreSQL connection check separately:
 
-The required PostgreSQL database name is:
-
-```text
-auca_library_db
+```bash
+mvn -Dtest=DatabaseConnectionCheck test
 ```
 
