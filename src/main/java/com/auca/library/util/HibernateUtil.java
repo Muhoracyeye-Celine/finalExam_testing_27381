@@ -3,6 +3,7 @@ package com.auca.library.util;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import com.auca.library.domain.Location;
+import com.auca.library.domain.User;
 
 public final class HibernateUtil {
 
@@ -19,6 +20,7 @@ public final class HibernateUtil {
 
             configuration.configure("hibernate.cfg.xml");
             configuration.addAnnotatedClass(Location.class);
+            configuration.addAnnotatedClass(User.class);
 
             return configuration.buildSessionFactory();
         } catch (Exception exception) {
