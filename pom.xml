@@ -16,6 +16,7 @@
         <hibernate.version>6.5.2.Final</hibernate.version>
         <postgresql.version>42.7.3</postgresql.version>
         <junit.version>4.13.2</junit.version>
+        <bcrypt.version>0.10.2</bcrypt.version>
     </properties>
 
     <dependencies>
@@ -37,6 +38,11 @@
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+    <groupId>at.favre.lib</groupId>
+    <artifactId>bcrypt</artifactId>
+    <version>${bcrypt.version}</version>
+       </dependency>
     </dependencies>
 
     <build>
