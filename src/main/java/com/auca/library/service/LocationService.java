@@ -83,7 +83,20 @@ public class LocationService {
 
         return findProvinceName(village);
     }
+    public Location getLocationById(UUID locationId) {
+    if (locationId == null) {
+        throw new IllegalArgumentException(
+                "Location ID is required."
+        );
+    }
 
+    return locationDao.findById(locationId)
+            .orElseThrow(() ->
+                    new LocationNotFoundException(
+                            "Location was not found."
+                    )
+            );
+}
     private void assignParentLocation(
             Location location,
             LocationType locationType,
