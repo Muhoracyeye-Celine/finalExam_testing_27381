@@ -129,6 +129,21 @@ public class UserService {
                 .orElse(false);
     }
 
+    public User getUserById(UUID personId) {
+    if (personId == null) {
+        throw new IllegalArgumentException(
+                "Person ID is required."
+        );
+    }
+
+    return userDao.findById(personId)
+            .orElseThrow(() ->
+                    new UserNotFoundException(
+                            "User was not found."
+                    )
+            );
+}
+
     private void validateRegistrationDetails(
             String firstName,
             String lastName,
