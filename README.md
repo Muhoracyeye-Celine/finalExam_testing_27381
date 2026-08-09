@@ -10,7 +10,7 @@ This repository contains the final project for the Software Testing and Techniqu
 
 ## Project purpose
 
-The AUCA Library Management System is a Java backend application for managing physical library books, users, memberships, borrowing, library locations, shelves, rooms, and late-return fees.
+The AUCA Library Management System is a Java backend application for managing physical library books, users, memberships, borrowing, location hierarchies, shelves, rooms, book returns, and late-return fees.
 
 The project focuses on implementing and testing business rules. It does not require a graphical user interface.
 
@@ -24,38 +24,44 @@ The project focuses on implementing and testing business rules. It does not requ
 - BCrypt password hashing
 - Git and GitHub
 
-## Completed work
+## Architecture
 
-- Created and configured the Maven project.
-- Created the PostgreSQL database named `auca_library_db`.
-- Configured Hibernate and PostgreSQL.
-- Created and tested the Hibernate session factory.
-- Implemented the complete location hierarchy:
-  - Province
-  - District
-  - Sector
-  - Cell
-  - Village
-- Implemented province lookup using a village ID.
-- Created `Person` as a mapped superclass.
-- Created the library `User` entity.
-- Implemented user registration and authentication.
-- Implemented BCrypt password hashing.
-- Implemented province lookup using a person ID.
-- Implemented Gold, Silver, and Striver membership rules.
-- Implemented membership registration and validation.
-- Created physical library-book records.
-- Implemented book registration and availability status.
-- Implemented book borrowing.
-- Enforced active-membership validation.
-- Prevented unavailable books from being borrowed.
-- Enforced membership borrowing limits:
-  - Gold: maximum 5 books
-  - Silver: maximum 3 books
-  - Striver: maximum 2 books
-- Set the initial late-return fee to zero.
-- Added automated unit and integration tests.
-- All 34 current tests pass successfully.
+The project separates responsibilities into these packages:
+
+- `domain`: database entities and enums
+- `dao`: PostgreSQL database operations
+- `service`: business rules and validation
+- `exception`: application-specific errors
+- `util`: Hibernate, password, and fee utilities
+
+## Completed features
+
+- PostgreSQL and Hibernate configuration
+- Province, District, Sector, Cell, and Village hierarchy
+- Validation of location parent relationships
+- Province lookup using a village ID
+- Province lookup using a person ID
+- User registration
+- BCrypt password hashing
+- User authentication
+- Gold, Silver, and Striver membership registration
+- Membership date validation
+- Physical-book registration
+- Physical-book availability tracking
+- Book borrowing
+- Active-membership validation
+- Membership borrowing-limit validation
+- Room registration
+- Shelf registration
+- Assignment of shelves to rooms
+- Assignment of books to shelves
+- Counting books inside a room
+- Finding a room with the fewest books
+- Returning borrowed books
+- Restoring returned books to available status
+- Preventing duplicate book returns
+- Membership-based late-fee calculation
+- Automated unit and integration testing
 
 ## Membership rules
 
@@ -65,18 +71,29 @@ The project focuses on implementing and testing business rules. It does not requ
 | Silver | 30 Rwf | 3 |
 | Striver | 10 Rwf | 2 |
 
+All new borrowing records begin with a late fee of zero. A fee is charged only when a book is returned after its due date.
 
-## Current database tables
+## Database tables
 
-Hibernate currently manages these tables:
+Hibernate manages these PostgreSQL tables:
 
 ```text
 locations
 library_users
 memberships
+rooms
+shelves
 books
 borrowings
 ```
+
+Relationships include:
+
+- A user belongs to a village.
+- A membership belongs to a user.
+- A shelf may belong to a room.
+- A physical book may belong to a shelf.
+- A borrowing belongs to a membership and a physical book.
 
 ## Package structure
 
@@ -91,6 +108,8 @@ src/main/java/com/auca/library/
 │   ├── BorrowingDao.java
 │   ├── LocationDao.java
 │   ├── MembershipDao.java
+│   ├── RoomDao.java
+│   ├── ShelfDao.java
 │   └── UserDao.java
 ├── domain/
 │   ├── Book.java
@@ -103,28 +122,38 @@ src/main/java/com/auca/library/
 │   ├── MembershipType.java
 │   ├── Person.java
 │   ├── Role.java
+│   ├── Room.java
+│   ├── Shelf.java
 │   └── User.java
 ├── exception/
 │   ├── BookNotAvailableException.java
 │   ├── BookNotFoundException.java
+│   ├── BorrowingAlreadyReturnedException.java
 │   ├── BorrowingLimitExceededException.java
+│   ├── BorrowingNotFoundException.java
 │   ├── DuplicateBookCodeException.java
 │   ├── DuplicateLocationCodeException.java
 │   ├── DuplicateMembershipException.java
+│   ├── DuplicateRoomCodeException.java
+│   ├── DuplicateShelfCodeException.java
 │   ├── DuplicateUsernameException.java
 │   ├── InactiveMembershipException.java
 │   ├── InvalidLocationHierarchyException.java
 │   ├── LocationNotFoundException.java
 │   ├── MembershipNotFoundException.java
+│   ├── RoomNotFoundException.java
+│   ├── ShelfNotFoundException.java
 │   └── UserNotFoundException.java
 ├── service/
 │   ├── BookService.java
 │   ├── BorrowingService.java
+│   ├── LibraryOrganizationService.java
 │   ├── LocationService.java
 │   ├── MembershipService.java
 │   └── UserService.java
 └── util/
     ├── HibernateUtil.java
+    ├── LateFeeCalculator.java
     └── PasswordUtil.java
 
 src/main/resources/
@@ -139,11 +168,13 @@ src/test/java/com/auca/library/
 ├── service/
 │   ├── BookServiceTest.java
 │   ├── BorrowingServiceTest.java
+│   ├── LibraryOrganizationServiceTest.java
 │   ├── LocationServiceTest.java
 │   ├── MembershipServiceTest.java
 │   └── UserServiceTest.java
 └── util/
     ├── DatabaseConnectionCheck.java
+    ├── LateFeeCalculatorTest.java
     └── PasswordUtilTest.java
 ```
 
@@ -155,7 +186,7 @@ The required PostgreSQL database name is:
 auca_library_db
 ```
 
-The repository provides `hibernate.cfg.xml.example` as a safe configuration template. Anyone cloning the project must copy it to `hibernate.cfg.xml` and enter their own PostgreSQL username and password.
+The repository provides `hibernate.cfg.xml.example` as a safe template.
 
 ## Running the tests
 
@@ -165,12 +196,14 @@ Run all automated tests with:
 mvn clean test
 ```
 
-The expected current result is:
+The expected final result is:
 
 ```text
-Tests run: 34, Failures: 0, Errors: 0, Skipped: 0
+Tests run: 45, Failures: 0, Errors: 0, Skipped: 0
 BUILD SUCCESS
 ```
+
+The automated suite contains unit tests and PostgreSQL integration tests.
 
 To test only the PostgreSQL and Hibernate connection, run:
 
@@ -180,4 +213,7 @@ mvn -Dtest=DatabaseConnectionCheck test
 
 ## Security
 
-User passwords are never stored as plain text. Passwords are hashed and verified using BCrypt.
+- Passwords are never stored as plain text.
+- Passwords are hashed and verified using BCrypt.
+- PostgreSQL credentials are excluded from GitHub.
+- The repository contains only a safe Hibernate configuration example.
