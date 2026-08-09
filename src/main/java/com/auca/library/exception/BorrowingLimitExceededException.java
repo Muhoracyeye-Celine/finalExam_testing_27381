@@ -1,7 +1,7 @@
 package com.auca.library.exception;
 
 public class BorrowingLimitExceededException
-        extends RuntimeException {
+        extends BorrowLimitExceededException {
 
     public BorrowingLimitExceededException(String message) {
         super(message);
