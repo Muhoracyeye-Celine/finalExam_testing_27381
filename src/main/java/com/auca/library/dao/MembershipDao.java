@@ -30,7 +30,38 @@ public class MembershipDao {
 
             throw exception;
         }
+        
     }
+    public Membership update(Membership membership) {
+    if (membership == null) {
+        throw new IllegalArgumentException(
+                "Membership is required."
+        );
+    }
+
+    Transaction transaction = null;
+
+    try (Session session = HibernateUtil
+            .getSessionFactory()
+            .openSession()) {
+
+        transaction = session.beginTransaction();
+
+        Membership updatedMembership =
+                session.merge(membership);
+
+        transaction.commit();
+
+        return updatedMembership;
+    } catch (RuntimeException exception) {
+        if (transaction != null
+                && transaction.isActive()) {
+            transaction.rollback();
+        }
+
+        throw exception;
+    }
+}
 
     public Optional<Membership> findById(
             UUID membershipId

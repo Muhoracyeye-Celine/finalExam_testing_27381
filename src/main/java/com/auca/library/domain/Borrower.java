@@ -13,7 +13,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "borrowings")
-public class Borrowing {
+public class Borrower {
 
     @Id
     @Column(
@@ -49,11 +49,11 @@ public class Borrowing {
     )
     private int lateFeeInRwandanFrancs;
 
-    protected Borrowing() {
+    protected Borrower() {
         // Required by Hibernate.
     }
 
-    public Borrowing(
+    public Borrower(
             Membership membership,
             Book book,
             LocalDate borrowedDate,
@@ -71,6 +71,17 @@ public class Borrowing {
     public UUID getBorrowingId() {
         return borrowingId;
     }
+    public UUID getBorrowerId() {
+    return borrowingId;
+}
+
+public LocalDate getPickupDate() {
+    return borrowedDate;
+}
+
+public int getFine() {
+    return lateFeeInRwandanFrancs;
+}
 
     public Membership getMembership() {
         return membership;

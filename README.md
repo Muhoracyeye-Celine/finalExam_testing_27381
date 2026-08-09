@@ -10,9 +10,9 @@ This repository contains the final project for the Software Testing and Techniqu
 
 ## Project purpose
 
-The AUCA Library Management System is a Java backend application for managing physical library books, users, memberships, borrowing, location hierarchies, shelves, rooms, book returns, and late-return fees.
+The AUCA Library Management System is a Java backend application for managing physical library books, users, memberships, borrowing, geographical locations, shelves, rooms, returns, and late-return fees.
 
-The project focuses on implementing and testing business rules. It does not require a graphical user interface.
+The project focuses on backend business rules and automated testing.
 
 ## Technologies
 
@@ -26,56 +26,79 @@ The project focuses on implementing and testing business rules. It does not requ
 
 ## Architecture
 
-The project separates responsibilities into these packages:
+The project separates responsibilities into the following packages:
 
-- `domain`: database entities and enums
-- `dao`: PostgreSQL database operations
+- `domain`: entities and enums
+- `dao`: Hibernate database operations
 - `service`: business rules and validation
-- `exception`: application-specific errors
-- `util`: Hibernate, password, and fee utilities
+- `exception`: application-specific exceptions
+- `util`: Hibernate, password, and late-fee utilities
 
-## Completed features
+## Implemented features
 
-- PostgreSQL and Hibernate configuration
 - Province, District, Sector, Cell, and Village hierarchy
 - Validation of location parent relationships
 - Province lookup using a village ID
 - Province lookup using a person ID
-- User registration
+- User self-registration for non-librarian users
 - BCrypt password hashing
 - User authentication
-- Gold, Silver, and Striver membership registration
-- Membership date validation
+- Gold, Silver, and Striver memberships
+- Stable UUID identification for membership types
+- Pending, approved, and rejected membership statuses
+- Membership approval and rejection
+- Membership registration and expiration dates
 - Physical-book registration
-- Physical-book availability tracking
-- Book borrowing
-- Active-membership validation
-- Membership borrowing-limit validation
-- Room registration
-- Shelf registration
+- Available, borrowed, and reserved book statuses
+- Automatic 14-day borrowing period
+- Borrowing records initialized with zero fine
+- Book availability validation
+- Gold borrowing limit of five books
+- Silver borrowing limit of three books
+- Striver borrowing limit of two books
+- Approved-membership validation
+- Shelf and room registration
 - Assignment of shelves to rooms
 - Assignment of books to shelves
-- Counting books inside a room
-- Finding a room with the fewest books
-- Returning borrowed books
-- Restoring returned books to available status
-- Preventing duplicate book returns
+- Automatic shelf available-stock updates
+- Counting books across all shelves in a room
+- Finding the room with the fewest books
+- Book returns
+- Prevention of duplicate returns
 - Membership-based late-fee calculation
-- Automated unit and integration testing
+- Late-fee calculation for returned and unreturned books
+- Automated unit and PostgreSQL integration tests
 
 ## Membership rules
 
-| Membership | Late fee per day | Maximum borrowed books |
+| Membership | Late fee per day | Maximum books |
 |---|---:|---:|
 | Gold | 50 Rwf | 5 |
 | Silver | 30 Rwf | 3 |
 | Striver | 10 Rwf | 2 |
 
-All new borrowing records begin with a late fee of zero. A fee is charged only when a book is returned after its due date.
+A newly registered membership starts with the `PENDING` status. It must be changed to `APPROVED` before the user can borrow books.
 
-## Database tables
+## Borrowing rules
 
-Hibernate manages these PostgreSQL tables:
+- Only an approved and active member can borrow.
+- The physical book must be available.
+- The pickup date is the current date.
+- The due date is 14 days after the pickup date.
+- A new borrowing record starts with a fine of zero.
+- The book status changes to `BORROWED`.
+- Returning a book changes its status back to `AVAILABLE`.
+- An unreturned overdue book calculates its fee against the current date.
+
+## Database
+
+The required PostgreSQL database is:
+
+```text
+auca_library_db
+```
+
+Hibernate manages these tables:
 
 ```text
 locations
@@ -87,133 +110,48 @@ books
 borrowings
 ```
 
-Relationships include:
-
-- A user belongs to a village.
-- A membership belongs to a user.
-- A shelf may belong to a room.
-- A physical book may belong to a shelf.
-- A borrowing belongs to a membership and a physical book.
-
-## Package structure
-
-```text
-database/
-└── create_database.sql
-
-src/main/java/com/auca/library/
-├── LibraryApplication.java
-├── dao/
-│   ├── BookDao.java
-│   ├── BorrowingDao.java
-│   ├── LocationDao.java
-│   ├── MembershipDao.java
-│   ├── RoomDao.java
-│   ├── ShelfDao.java
-│   └── UserDao.java
-├── domain/
-│   ├── Book.java
-│   ├── BookStatus.java
-│   ├── Borrowing.java
-│   ├── Gender.java
-│   ├── Location.java
-│   ├── LocationType.java
-│   ├── Membership.java
-│   ├── MembershipType.java
-│   ├── Person.java
-│   ├── Role.java
-│   ├── Room.java
-│   ├── Shelf.java
-│   └── User.java
-├── exception/
-│   ├── BookNotAvailableException.java
-│   ├── BookNotFoundException.java
-│   ├── BorrowingAlreadyReturnedException.java
-│   ├── BorrowingLimitExceededException.java
-│   ├── BorrowingNotFoundException.java
-│   ├── DuplicateBookCodeException.java
-│   ├── DuplicateLocationCodeException.java
-│   ├── DuplicateMembershipException.java
-│   ├── DuplicateRoomCodeException.java
-│   ├── DuplicateShelfCodeException.java
-│   ├── DuplicateUsernameException.java
-│   ├── InactiveMembershipException.java
-│   ├── InvalidLocationHierarchyException.java
-│   ├── LocationNotFoundException.java
-│   ├── MembershipNotFoundException.java
-│   ├── RoomNotFoundException.java
-│   ├── ShelfNotFoundException.java
-│   └── UserNotFoundException.java
-├── service/
-│   ├── BookService.java
-│   ├── BorrowingService.java
-│   ├── LibraryOrganizationService.java
-│   ├── LocationService.java
-│   ├── MembershipService.java
-│   └── UserService.java
-└── util/
-    ├── HibernateUtil.java
-    ├── LateFeeCalculator.java
-    └── PasswordUtil.java
-
-src/main/resources/
-├── hibernate.cfg.xml
-└── hibernate.cfg.xml.example
-
-src/test/java/com/auca/library/
-├── domain/
-│   ├── BookTest.java
-│   ├── LocationTypeTest.java
-│   └── MembershipTypeTest.java
-├── service/
-│   ├── BookServiceTest.java
-│   ├── BorrowingServiceTest.java
-│   ├── LibraryOrganizationServiceTest.java
-│   ├── LocationServiceTest.java
-│   ├── MembershipServiceTest.java
-│   └── UserServiceTest.java
-└── util/
-    ├── DatabaseConnectionCheck.java
-    ├── LateFeeCalculatorTest.java
-    └── PasswordUtilTest.java
-```
+`Person` is a mapped superclass and does not have its own database table.
 
 ## Database configuration
 
-The required PostgreSQL database name is:
+The repository provides hibernate.cfg.xml.example as a safe configuration template.
+
+Create the database using:
 
 ```text
-auca_library_db
+database/create_database.sql
 ```
-
-The repository provides `hibernate.cfg.xml.example` as a safe template.
 
 ## Running the tests
 
-Run all automated tests with:
+Run all regular tests with:
 
-```bash
+```powershell
 mvn clean test
 ```
 
-The expected final result is:
+Expected result:
 
 ```text
-Tests run: 45, Failures: 0, Errors: 0, Skipped: 0
+Tests run: 63
+Failures: 0
+Errors: 0
+Skipped: 0
 BUILD SUCCESS
 ```
 
-The automated suite contains unit tests and PostgreSQL integration tests.
+The test suite covers domain rules, service operations, Hibernate persistence, membership limits, organization of books, borrowing, returns, and late fees.
 
-To test only the PostgreSQL and Hibernate connection, run:
+To run the PostgreSQL connection check separately:
 
-```bash
+```powershell
 mvn -Dtest=DatabaseConnectionCheck test
 ```
 
 ## Security
 
-- Passwords are never stored as plain text.
-- Passwords are hashed and verified using BCrypt.
+- User passwords are hashed with BCrypt.
+- Plain-text passwords are not saved in PostgreSQL.
 - PostgreSQL credentials are excluded from GitHub.
-- The repository contains only a safe Hibernate configuration example.
+- Only `hibernate.cfg.xml.example` is committed.
+- Build output and editor settings are excluded using `.gitignore`.

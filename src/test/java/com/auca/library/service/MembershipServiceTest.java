@@ -10,6 +10,7 @@ import com.auca.library.domain.Membership;
 import com.auca.library.domain.MembershipType;
 import com.auca.library.domain.Role;
 import com.auca.library.domain.User;
+import com.auca.library.domain.MembershipStatus;
 import com.auca.library.exception.DuplicateMembershipException;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -192,6 +193,57 @@ public class MembershipServiceTest {
                 foundMembership.getMembershipType()
         );
     }
+
+    @Test
+public void registerMembership_gold_createsPendingMembershipLinkedToGoldType() {
+    User libraryUser = registerStudent();
+
+    Membership membership =
+            membershipService.registerMembership(
+                    libraryUser.getPersonId(),
+                    MembershipType.GOLD
+                            .getMembershipTypeId()
+            );
+
+    assertNotNull(membership.getMembershipId());
+
+    assertEquals(
+            libraryUser.getPersonId(),
+            membership.getLibraryUser().getPersonId()
+    );
+
+    assertEquals(
+            MembershipType.GOLD,
+            membership.getMembershipType()
+    );
+
+    assertEquals(
+            MembershipStatus.PENDING,
+            membership.getMembershipStatus()
+    );
+}
+
+@Test(expected = DuplicateMembershipException.class)
+public void registerMembership_userAlreadyHasActiveMembership_throwsException() {
+    User libraryUser = registerStudent();
+
+    Membership firstMembership =
+            membershipService.registerMembership(
+                    libraryUser.getPersonId(),
+                    MembershipType.GOLD
+                            .getMembershipTypeId()
+            );
+
+    membershipService.approveMembership(
+            firstMembership.getMembershipId()
+    );
+
+    membershipService.registerMembership(
+            libraryUser.getPersonId(),
+            MembershipType.SILVER
+                    .getMembershipTypeId()
+    );
+}
 
     private static User registerStudent() {
         return userService.registerUser(

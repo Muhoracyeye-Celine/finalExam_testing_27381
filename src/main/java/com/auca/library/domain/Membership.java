@@ -41,6 +41,16 @@ public class Membership {
     )
     private MembershipType membershipType;
 
+    @Enumerated(EnumType.STRING)
+@Column(
+        name = "membership_status",
+        nullable = false,
+        length = 20,
+        columnDefinition =
+                "varchar(20) default 'PENDING'"
+)
+private MembershipStatus membershipStatus;
+
     @Column(name = "registration_date", nullable = false)
     private LocalDate registrationDate;
 
@@ -62,6 +72,7 @@ public class Membership {
         this.membershipType = membershipType;
         this.registrationDate = registrationDate;
         this.expirationDate = expirationDate;
+        this.membershipStatus = MembershipStatus.PENDING;
     }
 
     public UUID getMembershipId() {
@@ -85,6 +96,22 @@ public class Membership {
     ) {
         this.membershipType = membershipType;
     }
+
+    public MembershipStatus getMembershipStatus() {
+    return membershipStatus;
+}
+
+public boolean isApproved() {
+    return membershipStatus == MembershipStatus.APPROVED;
+}
+
+public void approve() {
+    this.membershipStatus = MembershipStatus.APPROVED;
+}
+
+public void reject() {
+    this.membershipStatus = MembershipStatus.REJECTED;
+}
 
     public LocalDate getRegistrationDate() {
         return registrationDate;

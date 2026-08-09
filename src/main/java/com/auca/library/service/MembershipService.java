@@ -24,6 +24,31 @@ public class MembershipService {
     }
 
     public Membership registerMembership(
+        UUID userId,
+        UUID membershipTypeId
+) {
+    if (userId == null) {
+        throw new IllegalArgumentException(
+                "User ID is required."
+        );
+    }
+
+    MembershipType membershipType =
+            MembershipType.findById(membershipTypeId);
+
+    LocalDate registrationDate = LocalDate.now();
+    LocalDate expirationDate =
+            registrationDate.plusYears(1);
+
+    return registerMembership(
+            userId,
+            membershipType,
+            registrationDate,
+            expirationDate
+    );
+}
+
+    public Membership registerMembership(
             UUID personId,
             MembershipType membershipType,
             LocalDate registrationDate,
@@ -73,6 +98,28 @@ public class MembershipService {
                         )
                 );
     }
+
+    public Membership approveMembership(
+        UUID membershipId
+) {
+    Membership membership =
+            getMembershipById(membershipId);
+
+    membership.approve();
+
+    return membershipDao.update(membership);
+}
+
+public Membership rejectMembership(
+        UUID membershipId
+) {
+    Membership membership =
+            getMembershipById(membershipId);
+
+    membership.reject();
+
+    return membershipDao.update(membership);
+}
 
     public Membership getMembershipByUserId(
             UUID personId

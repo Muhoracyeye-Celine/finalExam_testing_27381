@@ -13,6 +13,12 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "shelves")
 public class Shelf {
+    @Column(
+        name = "available_stock",
+        nullable = false,
+        columnDefinition = "integer default 0"
+)
+private int availableStock;
 
     @Id
     @Column(
@@ -49,6 +55,7 @@ public class Shelf {
         this.shelfId = UUID.randomUUID();
         this.shelfCode = shelfCode;
         this.shelfName = shelfName;
+        this.availableStock = 0;
         this.room = null;
     }
 
@@ -71,6 +78,14 @@ public class Shelf {
     public void setShelfName(String shelfName) {
         this.shelfName = shelfName;
     }
+
+    public int getAvailableStock() {
+    return availableStock;
+}
+
+public void incrementAvailableStock() {
+    availableStock++;
+}
 
     public Room getRoom() {
         return room;

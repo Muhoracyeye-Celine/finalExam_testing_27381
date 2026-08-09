@@ -21,6 +21,22 @@ public class BookTest {
 
         assertTrue(book.isAvailable());
     }
+    @Test
+public void availableBook_canBeReserved() {
+    Book book = new Book(
+            "BOOK-RESERVE-001",
+            "9780134685991",
+            "Software Testing",
+            "Test Author"
+    );
+
+    book.markAsReserved();
+
+    assertEquals(
+            BookStatus.RESERVED,
+            book.getBookStatus()
+    );
+}
 
     @Test
     public void bookStatus_canChangeWhenBorrowedAndReturned() {

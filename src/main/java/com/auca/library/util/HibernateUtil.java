@@ -2,11 +2,12 @@ package com.auca.library.util;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
+
 import com.auca.library.domain.Location;
 import com.auca.library.domain.User;
 import com.auca.library.domain.Membership;
 import com.auca.library.domain.Book;
-import com.auca.library.domain.Borrowing;
+import com.auca.library.domain.Borrower;
 import com.auca.library.domain.Room;
 import com.auca.library.domain.Shelf;
 
@@ -28,7 +29,7 @@ public final class HibernateUtil {
             configuration.addAnnotatedClass(User.class);
             configuration.addAnnotatedClass(Membership.class);
             configuration.addAnnotatedClass(Book.class);
-            configuration.addAnnotatedClass(Borrowing.class);
+            configuration.addAnnotatedClass(Borrower.class);
             configuration.addAnnotatedClass(Room.class);
             configuration.addAnnotatedClass(Shelf.class);
 

@@ -66,45 +66,7 @@ public class LibraryOrganizationServiceTest {
     }
 
     @Test
-    public void assignShelfToRoom_connectsShelfAndRoom() {
-        Room room = registerTestRoom();
-        Shelf shelf = registerTestShelf();
-
-        Shelf assignedShelf =
-                organizationService.assignShelfToRoom(
-                        shelf.getShelfId(),
-                        room.getRoomId()
-                );
-
-        assertNotNull(assignedShelf.getRoom());
-
-        assertEquals(
-                room.getRoomId(),
-                assignedShelf.getRoom().getRoomId()
-        );
-    }
-
-    @Test
-    public void assignBookToShelf_connectsBookAndShelf() {
-        Shelf shelf = registerTestShelf();
-        Book book = registerTestBook();
-
-        Book assignedBook =
-                organizationService.assignBookToShelf(
-                        book.getBookId(),
-                        shelf.getShelfId()
-                );
-
-        assertNotNull(assignedBook.getShelf());
-
-        assertEquals(
-                shelf.getShelfId(),
-                assignedBook.getShelf().getShelfId()
-        );
-    }
-
-    @Test
-    public void countBooksInRoom_returnsCorrectNumber() {
+    public void assignShelfToRoom_updatesShelfRoomId() {
         Room room = registerTestRoom();
         Shelf shelf = registerTestShelf();
 
@@ -113,29 +75,110 @@ public class LibraryOrganizationServiceTest {
                 room.getRoomId()
         );
 
-        Book firstBook = registerTestBook();
-        Book secondBook = registerTestBook();
-
-        organizationService.assignBookToShelf(
-                firstBook.getBookId(),
-                shelf.getShelfId()
-        );
-
-        organizationService.assignBookToShelf(
-                secondBook.getBookId(),
-                shelf.getShelfId()
-        );
-
-        long numberOfBooks =
-                organizationService.countBooksInRoom(
-                        room.getRoomId()
+        Shelf updatedShelf =
+                organizationService.getShelfById(
+                        shelf.getShelfId()
                 );
 
-        assertEquals(2L, numberOfBooks);
+        assertNotNull(updatedShelf.getRoom());
+
+        assertEquals(
+                room.getRoomId(),
+                updatedShelf.getRoom().getRoomId()
+        );
     }
 
     @Test
-    public void findRoomWithFewestBooks_returnsEmptyRoom() {
+    public void assignBookToShelf_updatesBookShelfId() {
+        Shelf shelf = registerTestShelf();
+        Book book = registerTestBook();
+
+        organizationService.assignBookToShelf(
+                book.getBookId(),
+                shelf.getShelfId()
+        );
+
+        Book updatedBook =
+                bookService.getBookById(book.getBookId());
+
+        assertNotNull(updatedBook.getShelf());
+
+        assertEquals(
+                shelf.getShelfId(),
+                updatedBook.getShelf().getShelfId()
+        );
+    }
+
+    @Test
+    public void assignBookToShelf_incrementsShelfAvailableStock() {
+        Shelf shelf = registerTestShelf();
+        Book book = registerTestBook();
+
+        int stockBeforeAssignment =
+                shelf.getAvailableStock();
+
+        organizationService.assignBookToShelf(
+                book.getBookId(),
+                shelf.getShelfId()
+        );
+
+        Shelf updatedShelf =
+                organizationService.getShelfById(
+                        shelf.getShelfId()
+                );
+
+        assertEquals(
+                stockBeforeAssignment + 1,
+                updatedShelf.getAvailableStock()
+        );
+    }
+
+   @Test
+public void roomWithMultipleShelves_sumsBookCountsAcrossShelves() {
+    Room room = registerTestRoom();
+
+    Shelf firstShelf = registerTestShelf();
+    Shelf secondShelf = registerTestShelf();
+
+    organizationService.assignShelfToRoom(
+            firstShelf.getShelfId(),
+            room.getRoomId()
+    );
+
+    organizationService.assignShelfToRoom(
+            secondShelf.getShelfId(),
+            room.getRoomId()
+    );
+
+    Book firstBook = registerTestBook();
+    Book secondBook = registerTestBook();
+    Book thirdBook = registerTestBook();
+
+    organizationService.assignBookToShelf(
+            firstBook.getBookId(),
+            firstShelf.getShelfId()
+    );
+
+    organizationService.assignBookToShelf(
+            secondBook.getBookId(),
+            firstShelf.getShelfId()
+    );
+
+    organizationService.assignBookToShelf(
+            thirdBook.getBookId(),
+            secondShelf.getShelfId()
+    );
+
+    int numberOfBooks =
+            organizationService.countBooksInRoom(
+                    room.getRoomId()
+            );
+
+    assertEquals(3, numberOfBooks);
+}
+
+    @Test
+    public void multipleRooms_returnsRoomWithLowestBookCount() {
         Room emptyRoom = registerTestRoom();
 
         Room roomWithBook = registerTestRoom();
@@ -173,6 +216,18 @@ public class LibraryOrganizationServiceTest {
                 )
         );
     }
+
+    @Test
+public void roomWithNoShelves_returnsZero() {
+    Room emptyRoom = registerTestRoom();
+
+    int numberOfBooks =
+            organizationService.countBooksInRoom(
+                    emptyRoom.getRoomId()
+            );
+
+    assertEquals(0, numberOfBooks);
+}
 
     private static Room registerTestRoom() {
         return organizationService.registerRoom(

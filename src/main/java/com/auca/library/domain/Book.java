@@ -115,6 +115,9 @@ public class Book {
     public void markAsBorrowed() {
         this.bookStatus = BookStatus.BORROWED;
     }
+    public void markAsReserved() {
+    this.bookStatus = BookStatus.RESERVED;
+}
 
     public void markAsAvailable() {
         this.bookStatus = BookStatus.AVAILABLE;

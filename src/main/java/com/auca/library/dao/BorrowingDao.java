@@ -1,7 +1,8 @@
 package com.auca.library.dao;
 
-import com.auca.library.domain.Borrowing;
+import com.auca.library.domain.Borrower;
 import com.auca.library.util.HibernateUtil;
+
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
@@ -10,7 +11,7 @@ import java.util.UUID;
 
 public class BorrowingDao {
 
-    public Borrowing save(Borrowing borrowing) {
+    public Borrower save(Borrower borrowing) {
         Transaction transaction = null;
 
         try (Session session = HibernateUtil
@@ -32,7 +33,7 @@ public class BorrowingDao {
         }
     }
 
-    public Borrowing update(Borrowing borrowing) {
+    public Borrower update(Borrower borrowing) {
         Transaction transaction = null;
 
         try (Session session = HibernateUtil
@@ -41,7 +42,7 @@ public class BorrowingDao {
 
             transaction = session.beginTransaction();
 
-            Borrowing updatedBorrowing =
+            Borrower updatedBorrowing =
                     session.merge(borrowing);
 
             transaction.commit();
@@ -56,23 +57,22 @@ public class BorrowingDao {
         }
     }
 
-    public Optional<Borrowing> findById(
+    public Optional<Borrower> findById(
             UUID borrowingId
     ) {
         try (Session session = HibernateUtil
                 .getSessionFactory()
                 .openSession()) {
 
-            return session.createQuery(
-                            """
+            return session.createQuery("""
                             SELECT borrowing
-                            FROM Borrowing borrowing
+                            FROM Borrower borrowing
                             JOIN FETCH borrowing.membership
                             JOIN FETCH borrowing.book
                             WHERE borrowing.borrowingId =
                                   :borrowingId
                             """,
-                            Borrowing.class
+                            Borrower.class
                     )
                     .setParameter(
                             "borrowingId",
@@ -92,7 +92,7 @@ public class BorrowingDao {
             return session.createQuery(
                             """
                             SELECT COUNT(borrowing)
-                            FROM Borrowing borrowing
+                            FROM Borrower borrowing
                             WHERE borrowing.membership.membershipId =
                                   :membershipId
                               AND borrowing.returnDate IS NULL
@@ -107,23 +107,22 @@ public class BorrowingDao {
         }
     }
 
-    public Optional<Borrowing> findActiveByBookId(
+    public Optional<Borrower> findActiveByBookId(
             UUID bookId
     ) {
         try (Session session = HibernateUtil
                 .getSessionFactory()
                 .openSession()) {
 
-            return session.createQuery(
-                            """
+            return session.createQuery("""
                             SELECT borrowing
-                            FROM Borrowing borrowing
+                            FROM Borrower borrowing
                             JOIN FETCH borrowing.membership
                             JOIN FETCH borrowing.book
                             WHERE borrowing.book.bookId = :bookId
                               AND borrowing.returnDate IS NULL
                             """,
-                            Borrowing.class
+                            Borrower.class
                     )
                     .setParameter("bookId", bookId)
                     .uniqueResultOptional();

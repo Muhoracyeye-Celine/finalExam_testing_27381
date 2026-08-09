@@ -86,7 +86,7 @@ public class LibraryOrganizationService {
         return shelfDao.save(shelf);
     }
 
-    public Shelf assignShelfToRoom(
+    public void assignShelfToRoom(
             UUID shelfId,
             UUID roomId
     ) {
@@ -95,10 +95,10 @@ public class LibraryOrganizationService {
 
         shelf.assignToRoom(room);
 
-        return shelfDao.update(shelf);
+        shelfDao.update(shelf);
     }
 
-    public Book assignBookToShelf(
+    public void assignBookToShelf(
             UUID bookId,
             UUID shelfId
     ) {
@@ -106,17 +106,22 @@ public class LibraryOrganizationService {
         Shelf shelf = getShelfById(shelfId);
 
         book.assignToShelf(shelf);
+        bookDao.update(book);
 
-        return bookDao.update(book);
+        shelf.incrementAvailableStock();
+        shelfDao.update(shelf);
     }
 
-    public long countBooksInRoom(UUID roomId) {
-        Room room = getRoomById(roomId);
+    public int countBooksInRoom(UUID roomId) {
+    Room room = getRoomById(roomId);
 
-        return roomDao.countBooksByRoomId(
-                room.getRoomId()
-        );
-    }
+    long numberOfBooks =
+            roomDao.countBooksByRoomId(
+                    room.getRoomId()
+            );
+
+    return Math.toIntExact(numberOfBooks);
+}
 
     public Room findRoomWithFewestBooks() {
         List<Room> rooms = roomDao.findAll();
