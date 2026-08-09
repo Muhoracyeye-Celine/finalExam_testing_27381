@@ -5,6 +5,8 @@ import org.hibernate.cfg.Configuration;
 import com.auca.library.domain.Location;
 import com.auca.library.domain.User;
 import com.auca.library.domain.Membership;
+import com.auca.library.domain.Book;
+import com.auca.library.domain.Borrowing;
 
 public final class HibernateUtil {
 
@@ -23,6 +25,8 @@ public final class HibernateUtil {
             configuration.addAnnotatedClass(Location.class);
             configuration.addAnnotatedClass(User.class);
             configuration.addAnnotatedClass(Membership.class);
+            configuration.addAnnotatedClass(Book.class);
+            configuration.addAnnotatedClass(Borrowing.class);
 
             return configuration.buildSessionFactory();
         } catch (Exception exception) {
