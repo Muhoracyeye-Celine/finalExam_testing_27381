@@ -12,7 +12,7 @@ This repository contains the final project for the Software Testing and Techniqu
 
 The AUCA Library Management System is a Java backend application for managing physical library books, users, memberships, borrowing, library locations, shelves, rooms, and late-return fees.
 
-The project focuses on implementing business rules and testing them with JUnit. It does not require a graphical user interface.
+The project focuses on implementing and testing business rules. It does not require a graphical user interface.
 
 ## Technologies
 
@@ -26,44 +26,57 @@ The project focuses on implementing business rules and testing them with JUnit. 
 
 ## Completed work
 
-- Created the Maven project structure.
+- Created and configured the Maven project.
 - Created the PostgreSQL database named `auca_library_db`.
 - Configured Hibernate and PostgreSQL.
-- Created the Hibernate session factory.
-- Created and tested the database connection.
-- Implemented the location hierarchy:
+- Created and tested the Hibernate session factory.
+- Implemented the complete location hierarchy:
   - Province
   - District
   - Sector
   - Cell
   - Village
-- Enforced the correct parent relationship for every location type.
 - Implemented province lookup using a village ID.
 - Created `Person` as a mapped superclass.
 - Created the library `User` entity.
-- Implemented secure BCrypt password hashing.
-- Implemented user registration.
+- Implemented user registration and authentication.
+- Implemented BCrypt password hashing.
 - Implemented province lookup using a person ID.
-- Implemented user authentication.
+- Implemented Gold, Silver, and Striver membership rules.
+- Implemented membership registration and validation.
+- Created physical library-book records.
+- Implemented book registration and availability status.
+- Implemented book borrowing.
+- Enforced active-membership validation.
+- Prevented unavailable books from being borrowed.
+- Enforced membership borrowing limits:
+  - Gold: maximum 5 books
+  - Silver: maximum 3 books
+  - Striver: maximum 2 books
+- Set the initial late-return fee to zero.
 - Added automated unit and integration tests.
-- All 16 current tests pass successfully.
+- All 34 current tests pass successfully.
 
-## Current requirement progress
+## Membership rules
 
-| Requirement | Status |
-|---|---|
-| Create and test the location hierarchy | Completed |
-| Find province name using village ID | Completed |
-| Find province name using person ID | Completed |
-| Authenticate a user | Completed |
-| Register a membership | Pending |
-| Borrow a book | Pending |
-| Validate membership borrowing limits | Pending |
-| Assign a book to a shelf | Pending |
-| Assign a shelf to a room | Pending |
-| Count books in a room | Pending |
-| Find the room with the fewest books | Pending |
-| Calculate late-return fees | Pending |
+| Membership | Late fee per day | Maximum borrowed books |
+|---|---:|---:|
+| Gold | 50 Rwf | 5 |
+| Silver | 30 Rwf | 3 |
+| Striver | 10 Rwf | 2 |
+
+
+## Current database tables
+
+Hibernate currently manages these tables:
+
+```text
+locations
+library_users
+memberships
+books
+borrowings
+```
 
 ## Package structure
 
@@ -74,23 +87,41 @@ database/
 src/main/java/com/auca/library/
 ├── LibraryApplication.java
 ├── dao/
+│   ├── BookDao.java
+│   ├── BorrowingDao.java
 │   ├── LocationDao.java
+│   ├── MembershipDao.java
 │   └── UserDao.java
 ├── domain/
+│   ├── Book.java
+│   ├── BookStatus.java
+│   ├── Borrowing.java
 │   ├── Gender.java
 │   ├── Location.java
 │   ├── LocationType.java
+│   ├── Membership.java
+│   ├── MembershipType.java
 │   ├── Person.java
 │   ├── Role.java
 │   └── User.java
 ├── exception/
+│   ├── BookNotAvailableException.java
+│   ├── BookNotFoundException.java
+│   ├── BorrowingLimitExceededException.java
+│   ├── DuplicateBookCodeException.java
 │   ├── DuplicateLocationCodeException.java
+│   ├── DuplicateMembershipException.java
 │   ├── DuplicateUsernameException.java
+│   ├── InactiveMembershipException.java
 │   ├── InvalidLocationHierarchyException.java
 │   ├── LocationNotFoundException.java
+│   ├── MembershipNotFoundException.java
 │   └── UserNotFoundException.java
 ├── service/
+│   ├── BookService.java
+│   ├── BorrowingService.java
 │   ├── LocationService.java
+│   ├── MembershipService.java
 │   └── UserService.java
 └── util/
     ├── HibernateUtil.java
@@ -102,9 +133,14 @@ src/main/resources/
 
 src/test/java/com/auca/library/
 ├── domain/
-│   └── LocationTypeTest.java
+│   ├── BookTest.java
+│   ├── LocationTypeTest.java
+│   └── MembershipTypeTest.java
 ├── service/
+│   ├── BookServiceTest.java
+│   ├── BorrowingServiceTest.java
 │   ├── LocationServiceTest.java
+│   ├── MembershipServiceTest.java
 │   └── UserServiceTest.java
 └── util/
     ├── DatabaseConnectionCheck.java
@@ -119,8 +155,6 @@ The required PostgreSQL database name is:
 auca_library_db
 ```
 
-The real `hibernate.cfg.xml` file contains local database credentials and is excluded from Git by `.gitignore`.
-
 The repository provides `hibernate.cfg.xml.example` as a safe configuration template. Anyone cloning the project must copy it to `hibernate.cfg.xml` and enter their own PostgreSQL username and password.
 
 ## Running the tests
@@ -134,7 +168,7 @@ mvn clean test
 The expected current result is:
 
 ```text
-Tests run: 16, Failures: 0, Errors: 0, Skipped: 0
+Tests run: 34, Failures: 0, Errors: 0, Skipped: 0
 BUILD SUCCESS
 ```
 
