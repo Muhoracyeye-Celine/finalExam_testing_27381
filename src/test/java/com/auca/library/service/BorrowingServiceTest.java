@@ -20,12 +20,15 @@ import com.auca.library.exception.InactiveMembershipException;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+
 import java.time.LocalDate;
 import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import com.auca.library.exception.BorrowingAlreadyReturnedException;
 
 public class BorrowingServiceTest {
 
@@ -207,6 +210,88 @@ public class BorrowingServiceTest {
                 MembershipType.STRIVER
         );
     }
+
+    @Test
+public void returnBook_threeDaysLate_calculatesFeeAndMakesBookAvailable() {
+    LocalDate currentDate = LocalDate.now();
+
+    User libraryUser = registerMember(
+            MembershipType.GOLD,
+            currentDate.minusYears(1),
+            currentDate.plusYears(1)
+    );
+
+    Book book = registerTestBook();
+
+    LocalDate borrowedDate =
+            currentDate.minusDays(20);
+
+    LocalDate dueDate =
+            currentDate.minusDays(3);
+
+    Borrowing borrowing = borrowingService.borrowBook(
+            libraryUser.getPersonId(),
+            book.getBookId(),
+            borrowedDate,
+            dueDate
+    );
+
+    Borrowing returnedBorrowing =
+            borrowingService.returnBook(
+                    borrowing.getBorrowingId(),
+                    currentDate
+            );
+
+    assertTrue(returnedBorrowing.isReturned());
+
+    assertEquals(
+            currentDate,
+            returnedBorrowing.getReturnDate()
+    );
+
+    assertEquals(
+            150,
+            returnedBorrowing
+                    .getLateFeeInRwandanFrancs()
+    );
+
+    Book availableBook =
+            bookService.getBookById(book.getBookId());
+
+    assertEquals(
+            BookStatus.AVAILABLE,
+            availableBook.getBookStatus()
+    );
+}
+
+@Test(expected = BorrowingAlreadyReturnedException.class)
+public void returnBook_whenAlreadyReturned_throwsException() {
+    User libraryUser = registerActiveMember(
+            MembershipType.SILVER
+    );
+
+    Book book = registerTestBook();
+
+    LocalDate borrowedDate = LocalDate.now();
+    LocalDate dueDate = borrowedDate.plusDays(14);
+
+    Borrowing borrowing = borrowingService.borrowBook(
+            libraryUser.getPersonId(),
+            book.getBookId(),
+            borrowedDate,
+            dueDate
+    );
+
+    borrowingService.returnBook(
+            borrowing.getBorrowingId(),
+            borrowedDate
+    );
+
+    borrowingService.returnBook(
+            borrowing.getBorrowingId(),
+            borrowedDate
+    );
+}
 
     private static void borrowMaximumBooksAndAttemptOneMore(
             MembershipType membershipType

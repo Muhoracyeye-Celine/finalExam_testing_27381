@@ -7,6 +7,9 @@ import com.auca.library.domain.Membership;
 import com.auca.library.exception.BookNotAvailableException;
 import com.auca.library.exception.BorrowingLimitExceededException;
 import com.auca.library.exception.InactiveMembershipException;
+import com.auca.library.exception.BorrowingAlreadyReturnedException;
+import com.auca.library.exception.BorrowingNotFoundException;
+import com.auca.library.util.LateFeeCalculator;
 
 import java.time.LocalDate;
 import java.util.UUID;
@@ -97,6 +100,79 @@ public class BorrowingService {
 
         return savedBorrowing;
     }
+
+
+    public Borrowing returnBook(
+        UUID borrowingId,
+        LocalDate returnDate
+) {
+    if (borrowingId == null) {
+        throw new IllegalArgumentException(
+                "Borrowing ID is required."
+        );
+    }
+
+    if (returnDate == null) {
+        throw new IllegalArgumentException(
+                "Return date is required."
+        );
+    }
+
+    Borrowing borrowing =
+            getBorrowingById(borrowingId);
+
+    if (borrowing.isReturned()) {
+        throw new BorrowingAlreadyReturnedException(
+                "This borrowing has already been returned."
+        );
+    }
+
+    if (returnDate.isBefore(
+            borrowing.getBorrowedDate()
+    )) {
+        throw new IllegalArgumentException(
+                "Return date cannot be before "
+                        + "the borrowed date."
+        );
+    }
+
+    int lateFee = LateFeeCalculator.calculateLateFee(
+            borrowing
+                    .getMembership()
+                    .getMembershipType(),
+            borrowing.getDueDate(),
+            returnDate
+    );
+
+    borrowing.markAsReturned(returnDate);
+    borrowing.setLateFeeInRwandanFrancs(lateFee);
+
+    Borrowing updatedBorrowing =
+            borrowingDao.update(borrowing);
+
+    bookService.markBookAsAvailable(
+            borrowing.getBook()
+    );
+
+    return updatedBorrowing;
+}
+
+public Borrowing getBorrowingById(
+        UUID borrowingId
+) {
+    if (borrowingId == null) {
+        throw new IllegalArgumentException(
+                "Borrowing ID is required."
+        );
+    }
+
+    return borrowingDao.findById(borrowingId)
+            .orElseThrow(() ->
+                    new BorrowingNotFoundException(
+                            "Borrowing record was not found."
+                    )
+            );
+}
 
     private void validateBorrowingDetails(
             UUID personId,
