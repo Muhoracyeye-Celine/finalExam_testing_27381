@@ -1,7 +1,5 @@
 package com.auca.library.domain;
 
-import java.util.UUID;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -10,15 +8,11 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
+import java.util.UUID;
+
 @Entity
 @Table(name = "shelves")
 public class Shelf {
-    @Column(
-        name = "available_stock",
-        nullable = false,
-        columnDefinition = "integer default 0"
-)
-private int availableStock;
 
     @Id
     @Column(
@@ -43,6 +37,24 @@ private int availableStock;
     )
     private String shelfName;
 
+    @Column(
+            name = "book_category",
+            length = 100
+    )
+    private String bookCategory;
+
+    @Column(name = "initial_stock")
+    private int initialStock;
+
+    @Column(
+            name = "available_stock",
+            columnDefinition = "integer default 0"
+    )
+    private int availableStock;
+
+    @Column(name = "borrowed_number")
+    private int borrowedNumber;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id")
     private Room room;
@@ -51,11 +63,17 @@ private int availableStock;
         // Required by Hibernate.
     }
 
-    public Shelf(String shelfCode, String shelfName) {
+    public Shelf(
+            String shelfCode,
+            String shelfName
+    ) {
         this.shelfId = UUID.randomUUID();
         this.shelfCode = shelfCode;
         this.shelfName = shelfName;
+        this.bookCategory = null;
+        this.initialStock = 0;
         this.availableStock = 0;
+        this.borrowedNumber = 0;
         this.room = null;
     }
 
@@ -79,13 +97,65 @@ private int availableStock;
         this.shelfName = shelfName;
     }
 
-    public int getAvailableStock() {
-    return availableStock;
-}
+    public String getBookCategory() {
+        return bookCategory;
+    }
 
-public void incrementAvailableStock() {
-    availableStock++;
-}
+    public void setBookCategory(
+            String bookCategory
+    ) {
+        this.bookCategory = bookCategory;
+    }
+
+    public int getInitialStock() {
+        return initialStock;
+    }
+
+    public void setInitialStock(int initialStock) {
+        if (initialStock < 0) {
+            throw new IllegalArgumentException(
+                    "Initial stock cannot be negative."
+            );
+        }
+
+        this.initialStock = initialStock;
+    }
+
+    public int getAvailableStock() {
+        return availableStock;
+    }
+
+    public void setAvailableStock(
+            int availableStock
+    ) {
+        if (availableStock < 0) {
+            throw new IllegalArgumentException(
+                    "Available stock cannot be negative."
+            );
+        }
+
+        this.availableStock = availableStock;
+    }
+
+    public int getBorrowedNumber() {
+        return borrowedNumber;
+    }
+
+    public void setBorrowedNumber(
+            int borrowedNumber
+    ) {
+        if (borrowedNumber < 0) {
+            throw new IllegalArgumentException(
+                    "Borrowed number cannot be negative."
+            );
+        }
+
+        this.borrowedNumber = borrowedNumber;
+    }
+
+    public void incrementAvailableStock() {
+        availableStock++;
+    }
 
     public Room getRoom() {
         return room;

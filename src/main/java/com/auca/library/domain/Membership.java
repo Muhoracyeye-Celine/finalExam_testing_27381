@@ -25,6 +25,13 @@ public class Membership {
     )
     private UUID membershipId;
 
+    @Column(
+            name = "membership_code",
+            unique = true,
+            length = 50
+    )
+    private String membershipCode;
+
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(
             name = "user_id",
@@ -42,19 +49,25 @@ public class Membership {
     private MembershipType membershipType;
 
     @Enumerated(EnumType.STRING)
-@Column(
-        name = "membership_status",
-        nullable = false,
-        length = 20,
-        columnDefinition =
-                "varchar(20) default 'PENDING'"
-)
-private MembershipStatus membershipStatus;
+    @Column(
+            name = "membership_status",
+            nullable = false,
+            length = 20,
+            columnDefinition =
+                    "varchar(20) default 'PENDING'"
+    )
+    private MembershipStatus membershipStatus;
 
-    @Column(name = "registration_date", nullable = false)
+    @Column(
+            name = "registration_date",
+            nullable = false
+    )
     private LocalDate registrationDate;
 
-    @Column(name = "expiration_date", nullable = false)
+    @Column(
+            name = "expiration_date",
+            nullable = false
+    )
     private LocalDate expirationDate;
 
     protected Membership() {
@@ -68,15 +81,24 @@ private MembershipStatus membershipStatus;
             LocalDate expirationDate
     ) {
         this.membershipId = UUID.randomUUID();
+
+        this.membershipCode =
+                "MEM-" + membershipId;
+
         this.libraryUser = libraryUser;
         this.membershipType = membershipType;
         this.registrationDate = registrationDate;
         this.expirationDate = expirationDate;
-        this.membershipStatus = MembershipStatus.PENDING;
+        this.membershipStatus =
+                MembershipStatus.PENDING;
     }
 
     public UUID getMembershipId() {
         return membershipId;
+    }
+
+    public String getMembershipCode() {
+        return membershipCode;
     }
 
     public User getLibraryUser() {
@@ -98,20 +120,23 @@ private MembershipStatus membershipStatus;
     }
 
     public MembershipStatus getMembershipStatus() {
-    return membershipStatus;
-}
+        return membershipStatus;
+    }
 
-public boolean isApproved() {
-    return membershipStatus == MembershipStatus.APPROVED;
-}
+    public boolean isApproved() {
+        return membershipStatus
+                == MembershipStatus.APPROVED;
+    }
 
-public void approve() {
-    this.membershipStatus = MembershipStatus.APPROVED;
-}
+    public void approve() {
+        this.membershipStatus =
+                MembershipStatus.APPROVED;
+    }
 
-public void reject() {
-    this.membershipStatus = MembershipStatus.REJECTED;
-}
+    public void reject() {
+        this.membershipStatus =
+                MembershipStatus.REJECTED;
+    }
 
     public LocalDate getRegistrationDate() {
         return registrationDate;
@@ -141,10 +166,14 @@ public void reject() {
         }
 
         boolean registrationHasStarted =
-                !dateToCheck.isBefore(registrationDate);
+                !dateToCheck.isBefore(
+                        registrationDate
+                );
 
         boolean membershipHasNotExpired =
-                !dateToCheck.isAfter(expirationDate);
+                !dateToCheck.isAfter(
+                        expirationDate
+                );
 
         return registrationHasStarted
                 && membershipHasNotExpired;
