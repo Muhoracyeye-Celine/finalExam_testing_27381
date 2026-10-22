@@ -5,8 +5,6 @@ This repository contains the final project for the Software Testing and Techniqu
 ## Student information
 
 - Name: Celine Muhoracyeye
-- Student ID: 27381
-- Group : B
 - Repository: `finalExam_testing_27381`
 
 ## Project purpose
